@@ -50,7 +50,7 @@ except:
 
 
 # Define your function get_user_tweets here:
-def get_user_tweet(username):
+def get_user_tweets(username):
 	unique_identifier = "twitter_{}".format(username)
 
 	if unique_identifier in CACHE_DICTION:
@@ -102,16 +102,34 @@ umich_tweets = get_user_tweets("umich")
 ## HINT: There's a Tweepy method to get user info that we've looked at before, so when you have a user id or screenname you can find alllll the info you want about the user.
 ## HINT #2: You may want to go back to a structure we used in class this week to ensure that you reference the user correctly in each Tweet record.
 ## HINT #3: The users mentioned in each tweet are included in the tweet dictionary -- you don't need to do any manipulation of the Tweet text to find out which they are! Do some nested data investigation on a dictionary that represents 1 tweet to see it!
+conn = sqlite3.connect('project3_tweets.db')
+cur = conn.cursor()
+
+#Table Tweets
+cur.execute('DROP TABLE IF EXISTS Tweets') #Tweets = name of table
+table_spec = 'CREATE TABLE IF NOT EXISTS '
+table_spec += 'Tweets (tweet_id INTEGER PRIMARY KEY, text TEXT, user_id TEXT, FOREIGN KEY(user_id) REFERENCES Users(user_id), time_posted TIMESTAMP, retweets INTEGER)' 
 
 
+#Table Users
+cur.execute('DROP TABLE IF EXISTS Users') #Tweets = name of table
+table_spec = 'CREATE TABLE IF NOT EXISTS '
+table_spec += 'Users (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs TEXT, descriptions TEXT)' 
 
+cur.execute(table_spec) #TABLES ARE CREATED
 
+#statement = 'INSERT INTO Users VALUES (?, ?, ?, ?)' #puts information into table, before this, table is empty
+print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
+statement = 'INSERT INTO Users VALUES (?, ?, ?, ?, ?)' #puts information into table, before this, table is empty
+for user in umich_tweets:
+	u = (user['statuses']['user']['id_str'],user['statuses']['user']["screen_name"],user['statuses']['user']['favourites_count'], user['statuses']['user']['description'])
+	cur.execute(statement, u)
 
-
-
-
-
-
+print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
+statement = 'INSERT INTO Tweets VALUES (?, ?, ?, ?, ?)' #puts information into table, before this, table is empty
+for tweet in umich_tweets:
+	t = (tweet['id'],tweet['user']['screen_name'],tweet['created_at'], tweet['text'],tweet['retweet_count'])
+	cur.execute(statement, t)
 
 ## Task 3 - Making queries, saving data, fetching data
 
