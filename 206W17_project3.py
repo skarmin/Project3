@@ -108,28 +108,45 @@ cur = conn.cursor()
 #Table Tweets
 cur.execute('DROP TABLE IF EXISTS Tweets') #Tweets = name of table
 table_spec = 'CREATE TABLE IF NOT EXISTS '
-table_spec += 'Tweets (tweet_id INTEGER PRIMARY KEY, text TEXT, user_id TEXT, FOREIGN KEY(user_id) REFERENCES Users(user_id), time_posted TIMESTAMP, retweets INTEGER)' 
+table_spec += 'Tweets (tweet_id TEXT PRIMARY KEY, text TEXT, user_id TEXT, time_posted TIMESTAMP, retweets INTEGER)' 
+
+cur.execute(table_spec) #TABLES ARE CREATED
 
 
 #Table Users
 cur.execute('DROP TABLE IF EXISTS Users') #Tweets = name of table
 table_spec = 'CREATE TABLE IF NOT EXISTS '
-table_spec += 'Users (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs TEXT, descriptions TEXT)' 
+table_spec += 'Users (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs INTEGER, descriptions TEXT)' 
 
 cur.execute(table_spec) #TABLES ARE CREATED
 
-#statement = 'INSERT INTO Users VALUES (?, ?, ?, ?)' #puts information into table, before this, table is empty
-print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
-statement = 'INSERT INTO Users VALUES (?, ?, ?, ?, ?)' #puts information into table, before this, table is empty
-for user in umich_tweets:
-	u = (user['statuses']['user']['id_str'],user['statuses']['user']["screen_name"],user['statuses']['user']['favourites_count'], user['statuses']['user']['description'])
-	cur.execute(statement, u)
-
-print("!!!!!!!!!!!!!!!!!!!!!!!!!!")
-statement = 'INSERT INTO Tweets VALUES (?, ?, ?, ?, ?)' #puts information into table, before this, table is empty
+Tweetstatement = 'INSERT OR IGNORE INTO Tweets VALUES (?, ?, ?, ?, ?)' #puts information into table, before this, table is empty
+Userstatement = 'INSERT OR IGNORE INTO Users VALUES (?, ?, ?, ?)' #puts information into table, before this, table is empty
 for tweet in umich_tweets:
-	t = (tweet['id'],tweet['user']['screen_name'],tweet['created_at'], tweet['text'],tweet['retweet_count'])
-	cur.execute(statement, t)
+	u = (str(tweet['user']['id']), tweet['user']['screen_name'], tweet['user']['favourites_count'], tweet['user']['description'])
+	cur.execute(Userstatement, u)
+
+for tweet in umich_tweets:
+
+	t = (tweet['id_str'], tweet['text'], str(tweet['user']['id']),tweet['created_at'], tweet['retweet_count'])
+	cur.execute(Tweetstatement, t)
+
+for tweet in umich_tweets:
+	for user in tweet['entities']['user_mentions']:
+		unique_identifier = "user_{}".format(user['screen_name'])
+		if unique_identifier in CACHE_DICTION:
+			variable = CACHE_DICTION[unique_identifier]
+		else:
+			variable = api.get_user(user['screen_name'])
+			CACHE_DICTION[unique_identifier] = variable
+			f = open(CACHE_FNAME, "w")
+			f.write(json.dumps(CACHE_DICTION))
+			f.close()
+
+		U1 = (variable['id_str'], variable['screen_name'],variable['favourites_count'], variable['description'])
+		cur.execute(Userstatement, U1)
+
+conn.commit()
 
 ## Task 3 - Making queries, saving data, fetching data
 
