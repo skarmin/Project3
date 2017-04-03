@@ -116,7 +116,7 @@ cur.execute(table_spec) #TABLES ARE CREATED
 #Table Users
 cur.execute('DROP TABLE IF EXISTS Users') #Tweets = name of table
 table_spec = 'CREATE TABLE IF NOT EXISTS '
-table_spec += 'Users (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs INTEGER, descriptions TEXT)' 
+table_spec += 'Users (user_id INTEGER PRIMARY KEY, screen_name TEXT, num_favs INTEGER, description TEXT)' 
 
 cur.execute(table_spec) #TABLES ARE CREATED
 
@@ -149,36 +149,53 @@ for tweet in umich_tweets:
 conn.commit()
 
 ## Task 3 - Making queries, saving data, fetching data
-
 # All of the following sub-tasks require writing SQL statements and executing them using Python.
 
 # Make a query to select all of the records in the Users database. Save the list of tuples in a variable called users_info.
-
+statement = 'SELECT * FROM Users'
+result = cur.execute(statement)
+users_info = []
+for i in result.fetchall():
+	users_info.append(i)
 # Make a query to select all of the user screen names from the database. Save a resulting list of strings (NOT tuples, the strings inside them!) in the variable screen_names. HINT: a list comprehension will make this easier to complete!
-
+statement = 'SELECT screen_name FROM Users'
+result = cur.execute(statement)
+screen_names  = []
+for i in result.fetchall():
+	for a in i:
+		screen_names.append(a)
 
 # Make a query to select all of the tweets (full rows of tweet information) that have been retweeted more than 25 times. Save the result (a list of tuples, or an empty list) in a variable called more_than_25_rts.
-
-
+statement = 'SELECT * FROM Tweets WHERE retweets > 25'
+result = cur.execute(statement)
+more_than_25_rts = []
+for i in result.fetchall():
+	more_than_25_rts.append(i)
 
 # Make a query to select all the descriptions (descriptions only) of the users who have favorited more than 25 tweets. Access all those strings, and save them in a variable called descriptions_fav_users, which should ultimately be a list of strings.
-
+statement = 'SELECT description FROM Users WHERE num_favs > 25'
+result = cur.execute(statement)
+descriptions_fav_users = []
+for i in result.fetchall():
+	for a in i:
+		descriptions_fav_users.append(a)
 
 
 # Make a query using an INNER JOIN to get a list of tuples with 2 elements in each tuple: the user screenname and the text of the tweet -- for each tweet that has been retweeted more than 50 times. Save the resulting list of tuples in a variable called joined_result.
-
-
-
+statement = 'SELECT screen_name, Tweets.text FROM Tweets INNER JOIN Users ON Tweets.user_id=Users.user_id WHERE Tweets.retweets >50'
+result = cur.execute(statement)
+joined_result = []
+for i in result.fetchall():
+	joined_result.append(i)
 
 ## Task 4 - Manipulating data with comprehensions & libraries
-
 ## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
-
+description_words = {words for line in descriptions_fav_users for words in line.split()}
 
 
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically (but using a Counter will do a lot of work for you...).
 
-
+# sorted_tup = sorted(tup, key = lambda x: (-x[1],x[0])
 
 ## Putting it all together...
 # Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
