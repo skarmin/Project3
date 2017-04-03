@@ -192,15 +192,61 @@ for i in result.fetchall():
 ## Use a set comprehension to get a set of all words (combinations of characters separated by whitespace) among the descriptions in the descriptions_fav_users list. Save the resulting set in a variable called description_words.
 description_words = {words for line in descriptions_fav_users for words in line.split()}
 
-
 ## Use a Counter in the collections library to find the most common character among all of the descriptions in the descriptions_fav_users list. Save that most common character in a variable called most_common_char. Break any tie alphabetically (but using a Counter will do a lot of work for you...).
+word = ""
+for x in description_words:
+	word = word + x
+wordX = word.lower()
+tup = collections.Counter(wordX).most_common()
 
-# sorted_tup = sorted(tup, key = lambda x: (-x[1],x[0])
+#print (tup)
+
+
+# sorted_tup = sorted(tup, key = lambda x: x[0])
+# real_tup = sorted(sorted_tup, key = lambda x: x[1], reverse = True)
+
+				#SAME AS
+
+sorted_tup = sorted(tup, key = lambda x: (-x[1],x[0]))
+
+
+
+#print (real_tup)
+most_common_char = sorted_tup[0][0]
+#print (most_common_char)
+
 
 ## Putting it all together...
 # Write code to create a dictionary whose keys are Twitter screen names and whose associated values are lists of tweet texts that that user posted. You may need to make additional queries to your database! To do this, you can use, and must use at least one of: the DefaultDict container in the collections library, a dictionary comprehension, list comprehension(s). Y
 # You should save the final dictionary in a variable called twitter_info_diction.
+que = 'SELECT Users.screen_name, Tweets.text FROM Tweets INNER JOIN Users ON instr(Tweets.user_id, Users.user_id)'
+result = cur.execute(que)
+keyvalues = result.fetchall()
+key_list = [x[0] for x in keyvalues]
+value_list = [x[1] for x in keyvalues]
 
+len_keyvalue = len(keyvalues)
+twitter_info_diction = {}
+for i in range(len_keyvalue):
+	if key_list[i] in twitter_info_diction.keys():
+		twitter_info_diction[key_list[i]].append(value_list[i])
+	else:
+		twitter_info_diction[key_list[i]] = [value_list[i]]
+
+
+# query = 'SELECT Users.screen_name, Tweets.text FROM Tweets INNER JOIN Users ON instr(Tweets.user_id, Users.user_id)'
+# result = cur.execute(query)
+# keyvals = result.fetchall()
+# key_list = [s[0] for s in keyvals]
+# value_list = [s[1] for s in keyvals]
+
+# len_keyval = len(keyvals)
+# twitter_info_diction = {}
+# for i in range(len_keyval):
+# 	if key_list[i] in twitter_info_diction.keys():
+# 		twitter_info_diction[key_list[i]].append(value_list[i])
+# 	else:
+# 		twitter_info_diction[key_list[i]] = [value_list[i]]
 
 
 ### IMPORTANT: MAKE SURE TO CLOSE YOUR DATABASE CONNECTION AT THE END OF THE FILE HERE SO YOU DO NOT LOCK YOUR DATABASE (it's fixable, but it's a pain). ###
