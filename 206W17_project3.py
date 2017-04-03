@@ -41,29 +41,27 @@ CACHE_FNAME = "SI206_project3_cache.json"
 # Put the rest of your caching setup here:
 try: 
 	cache_file = open(CACHE_FNAME, 'r')
-	cache_cintents = cache_file.read()
-	cahce_file.close()
-	CACHE_DICTION = json.loads(cahce_contents)
+	cache_contents = cache_file.read()
+	cache_file.close()
+	CACHE_DICTION = json.loads(cache_contents)
 except:
 	CACHE_DICTION = {}
-
 
 
 # Define your function get_user_tweets here:
 def get_user_tweets(username):
 	unique_identifier = "twitter_{}".format(username)
-
 	if unique_identifier in CACHE_DICTION:
-		print("Using CAshed data for", username)
+		print("Using Cashed data for", username)
 		twitter_results = CACHE_DICTION[unique_identifier]
 	else:
 		print("Getting data from internet for", username)
 		twitter_results = api.user_timeline(username)
 		CACHE_DICTION[unique_identifier] = twitter_results
-
 		f = open(CACHE_FNAME, "w")
 		f.write(json.dumps(CACHE_DICTION))
 		f.close()
+	
 	return twitter_results[:20]
 
 
@@ -232,21 +230,6 @@ for i in range(len_keyvalue):
 		twitter_info_diction[key_list[i]].append(value_list[i])
 	else:
 		twitter_info_diction[key_list[i]] = [value_list[i]]
-
-
-# query = 'SELECT Users.screen_name, Tweets.text FROM Tweets INNER JOIN Users ON instr(Tweets.user_id, Users.user_id)'
-# result = cur.execute(query)
-# keyvals = result.fetchall()
-# key_list = [s[0] for s in keyvals]
-# value_list = [s[1] for s in keyvals]
-
-# len_keyval = len(keyvals)
-# twitter_info_diction = {}
-# for i in range(len_keyval):
-# 	if key_list[i] in twitter_info_diction.keys():
-# 		twitter_info_diction[key_list[i]].append(value_list[i])
-# 	else:
-# 		twitter_info_diction[key_list[i]] = [value_list[i]]
 
 
 ### IMPORTANT: MAKE SURE TO CLOSE YOUR DATABASE CONNECTION AT THE END OF THE FILE HERE SO YOU DO NOT LOCK YOUR DATABASE (it's fixable, but it's a pain). ###
